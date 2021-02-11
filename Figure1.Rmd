@@ -1,0 +1,59 @@
+---
+title: "NAFCAnalysis"
+output: html_notebook
+---
+
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(gridExtra)
+library(lme4)
+
+NAFCdata<-read.csv("/Users/jreyn/OneDrive/Documents/grad school/NAFHM19/Data/Rfiles/NAFCsummaryR.csv")
+NAFCdata$FNominal.NAFC<- as.factor(NAFCdata$FNominal.NAFC)
+NAFCdata$FDay.of.experiment<- as.factor(NAFCdata$FDay.of.experiment)
+NAFCdata
+```
+
+  
+
+```{r}
+NAFCdata$FNominal.NAFC <- factor(NAFCdata$FNominal.NAFC, levels = c("0 mg/L", "2.5 mg/L", "6.5 mg/L", "10 mg/L", "14 mg/L", "21 mg/L", "29.5 mg/L", "40 mg/L", "54 mg/L"))
+a<- ggplot(NAFCdata, aes(x=IDay.of.experiment, y= Measured.NAFC,  group= FNominal.NAFC ))+ 
+         geom_point(aes(shape=FNominal.NAFC))+
+  geom_line()+
+  scale_shape_manual(values=c(3, 16, 17, 15, 13, 8, 10, 2, 7))+
+  geom_vline(linetype="dotted", xintercept = 0)+
+  geom_vline(linetype="dotted", xintercept = 3)+
+  ylab('Measured NAFC concentration (mg/L)')+
+         xlab('Day of experiment')+ 
+  theme_few()+
+  theme(legend.title = element_blank())
+a
+```
+
+```{r}
+b<- ggplot(NAFCdata, aes(x=INominal.NAFC, y= Measured.NAFC,  group=FDay.of.experiment ))+ 
+         geom_point(aes(colour=FDay.of.experiment, fill= FDay.of.experiment), shape= 21, size= 3, colour= "black")+
+  geom_abline(linetype="dotted", intercept = 0, slope = 1)+
+  ylab('Measured NAFC concentration (mg/L)')+
+         xlab('Nominal NAFC concentration (mg/L)')+ 
+  scale_y_continuous(limits=c(0, 60))+
+   scale_x_continuous(limits=c(0, 60))+
+  theme_few()+
+   theme(legend.title = element_blank())
+b
+```
+
+grid.arrange(b3, s3, e3, p3, ncol=2, top = 'Before food addition')
+```{r}
+grid.arrange(a, b, ncol=2)
+```
+
+
+
+
+
