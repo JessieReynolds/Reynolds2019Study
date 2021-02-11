@@ -1,0 +1,80 @@
+---
+title: "Figure 2a EmbryoMortality"
+output: html_notebook
+---
+
+Loading data:
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(gridExtra)
+library(lme4)
+
+#embryo mortality data
+emortdata<- read.csv("/Users/jreyn/OneDrive/Documents/grad school/NAFHM19/Data/analysis/EmbryoMort.csv")
+emortdata$Rep<- as.factor(emortdata$Rep)
+emortdata$Mort<- as.factor(emortdata$Mort)
+emortdata
+tail(emortdata)
+```
+
+Checking assumptions for glm analysis:
+
+```{r}
+emortmodel<- glm(Mort ~ ï..Treatment, data= emortdata, family=binomial)
+plot(emortmodel)
+plot(emortmodel, 4)
+```
+Residuals vs fitted and scale location look fairly flat lined, and normal Q-Q plot looks to follow 1:1 trend. There are two points which might be considered outliers, though upon inspecting 2600 and 2700 I don't see why their value of 0 or 1 would influence the data so much. 
+
+***Would love your thoughts and second opinion on checking the assumptions of the data**
+
+Glmer backwards stepwise regression to test if random effects are significant:
+```{r}
+m1<- glmer(Mort~ ï..Treatment + (1|Rep), data= emortdata, family=binomial)
+m2<- glm(Mort~ ï..Treatment, data= emortdata, family=binomial)
+anova(m1, m2)
+#significant difference between models
+```
+
+***It appears that replicate cannot be taken out of the model without significantly affecting it, I am surprised by this as conditions were consistent across replicates and replicates were randomly distributed throughout the experimental area. Any thoughts as to why this may have occurred, or if I have presented my data in a way that might cause this unexpected result??***
+
+```{r}
+emortmodel<- glm(Mort ~ ï..Treatment, data= emortdata, family=binomial)
+summary(emortmodel)
+```
+When replicate is taken out of model, NAFC treatment significantly affects embryo mortality (p = 2e-16 ***). 
+
+
+Embryo mortality LC50 calculation:
+
+```{r}
+dose.p(emortmodel, p = c(0.5))
+
+```
+LC50 for embryo mortality is 20.22 mg/L NAFC.
+
+***QUESTION: Is it possible to calculate 95% CI of this LC50 with the SE?*** 
+
+Plotting the glm with LC50:
+```{r}
+range(emortdata$ï..Treatment)
+xETreatment <- seq(0, 53.8, 0.01)
+```
+
+***As discussed, the below figure could use much improvement. Will make y-axis proportion of mortality, and either use bar graph or point graph to represent average proportion of mortality (across 3 reps) for each treatment, then place glm curve with LC50 over top.***
+
+```{r}
+yETreatment<- predict(emortmodel, list(ï..Treatment = xETreatment),type="response")
+plot(emortdata$ï..Treatment, emortdata$Mort, pch= 16, xlab= "Embryonic NAFC treatment (mg/L)", ylab= "Mortality")
+lines(xETreatment, yETreatment,lwd = 2)
+abline(v= 20.21837, lty= 2, lwd= 1)
+```
+
+
+
+
+
+
+
