@@ -10,11 +10,12 @@ library(ggplot2)
 library(ggthemes)
 library(gridExtra)
 library(lme4)
+library(MASS)
+library(drc)
 
 #embryo mortality data
 emortdata<- read.csv("/Users/jreyn/OneDrive/Documents/grad school/NAFHM19/Data/analysis/EmbryoMort.csv")
 emortdata$Rep<- as.factor(emortdata$Rep)
-emortdata$Mort<- as.factor(emortdata$Mort)
 emortdata
 tail(emortdata)
 ```
@@ -71,6 +72,8 @@ plot(emortdata$ï..Treatment, emortdata$Mort, pch= 16, xlab= "Embryonic NAFC tre
 lines(xETreatment, yETreatment,lwd = 2)
 abline(v= 20.21837, lty= 2, lwd= 1)
 ```
+
+
 
 
 

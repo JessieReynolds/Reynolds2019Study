@@ -1,0 +1,72 @@
+---
+title: "Figure4doseresponse"
+output: html_notebook
+---
+
+Larval mortality:
+
+Using drc to get LC50/ dose response for binary data (From Ritz 2015):
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(ggthemes)
+library(gridExtra)
+library(lme4)
+library(MASS)
+library(drc)
+
+#embryo mortality data
+lmortdata<- read.csv("/Users/jreyn/OneDrive/Documents/grad school/NAFHM19/Data/Rfiles/mortalityR.csv")
+lmortdata$Rep<- as.factor(lmortdata$Rep)
+lmortdata
+```
+
+## Fitting an extended logistic regression model
+## where the upper limit is estimated
+earthworms.m1 <- drm(number/total ~ dose, weights = total, data = earthworms,
+fct = LL.3(), type = "binomial")
+```{r}
+lmort.m1<- drm(TotalDeath/Initial ~ Treatment, weights=TotalDeath, data=lmortdata, fct=LL.3(), type="binomial")
+summary(lmort.m1)
+```
+
+```{r}
+plot(lmort.m1)
+```
+
+Estimating LC5, LC10, LC50, with CI using delta method:
+```{r}
+ED(lmort.m1, c(5, 10, 50), interval = "delta")
+```
+
+Plotting with ggplot:
+```{r}
+
+```
+
+# new dose levels as support for the line
+newdata <- expand.grid(conc=exp(seq(log(0.5), log(100), length=100)))
+# predictions and confidence intervals
+pm <- predict(ryegrass.LL.4, newdata=newdata, interval="confidence")
+# new data with predictions
+newdata$p <- pm[,1]
+newdata$pmin <- pm[,2]
+newdata$pmax <- pm[,3]
+# plot curve
+library(ggplot2)
+# need to shift conc == 0 a bit up, otherwise there are problems with coord_trans
+ryegrass$conc0 <- ryegrass$conc
+ryegrass$conc0[ryegrass$conc0 == 0] <- 0.5
+# plotting the curve
+ggplot(ryegrass, aes(x = conc0, y = rootl)) +
+geom_point() +
+geom_ribbon(data=newdata, aes(x=conc, y=p, ymin=pmin, ymax=pmax), alpha=0.2) +
+geom_line(data=newdata, aes(x=conc, y=p)) +
+coord_trans(x="log") +
+xlab("Ferulic acid (mM)") + ylab("Root length (cm)")
+
+
+
+
+
