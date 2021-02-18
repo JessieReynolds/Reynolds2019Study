@@ -1,9 +1,9 @@
 ---
-title: "Figure4doseresponse"
+title: "Figure2aV2"
 output: html_notebook
 ---
 
-Larval mortality:
+Embryo mortality:
 
 Using drc to get LC50/ dose response for binary data (From Ritz 2015):
 
@@ -17,37 +17,37 @@ library(MASS)
 library(drc)
 
 #embryo mortality data
-lmortdata<- read.csv("/Users/jreyn/OneDrive/Documents/grad school/NAFHM19/Data/Rfiles/mortalityR.csv")
-lmortdata$Rep<- as.factor(lmortdata$Rep)
-lmortdata
+emortdata<- read.csv("/Users/jreyn/OneDrive/Documents/grad school/NAFHM19/Data/analysis/EmbryoMort2.csv")
+emortdata$Rep<- as.factor(emortdata$Rep)
+emortdata
 ```
 
 ## Fitting an extended logistic regression model
 ## where the upper limit is estimated
 
 ```{r}
-lmort.m1<- drm(TotalDeath/Initial ~ Treatment, weights=TotalDeath, data=lmortdata, fct=LL.3(), type="binomial")
-summary(lmort.m1)
+emort.m1<- drm(TotalDeath/TotalEmbryosStart ~ Treatment, weights=TotalDeath, data=emortdata, fct=LL.3(), type="binomial")
+summary(emort.m1)
 ```
 
+
 ```{r}
-plot(lmort.m1)
+plot(emort.m1)
 ```
 
 Estimating LC5, LC10, LC50, with CI using delta method:
 ```{r}
-ED(lmort.m1, c(5, 10, 50), interval = "delta")
+ED(emort.m1, c(5, 10, 50), interval = "delta")
 ```
-**LC50 for larval mortality is 40.69 mg/L, but CI are huge? 
 
 Plotting with ggplot:
 ```{r}
-newdata <- expand.grid(Treatment=exp(seq(log(0.5), log(22), length=22)))
+newdata <- expand.grid(Treatment=exp(seq(log(0.5), log(55), length=55)))
 ```
 
 ```{r}
 # predictions and confidence intervals
-pm <- predict(lmort.m1, newdata=newdata, interval="confidence")
+pm <- predict(emort.m1, newdata=newdata, interval="confidence")
 ```
 
 ```{r}
@@ -60,13 +60,13 @@ newdata$pmax <- pm[,3]
 ```{r}
 # plot curve
 # need to shift conc == 0 a bit up, otherwise there are problems with coord_trans
-lmortdata$Treatment0 <- lmortdata$Treatment
-lmortdata$Treatment0[lmortdata$Treatment0 == 0] <- 0.5
+emortdata$Treatment0 <- emortdata$Treatment
+emortdata$Treatment0[emortdata$Treatment0 == 0] <- 0.5
 ```
 
 ```{r}
 # plotting the curve
-ggplot(lmortdata, aes(x = Treatment0, y = TotalDeath/Initial)) +
+ggplot(emortdata, aes(x = Treatment0, y = TotalDeath/TotalEmbryosStart)) +
 geom_point() + 
 geom_ribbon(data=newdata, aes(x=Treatment, y=p, ymin=pmin, ymax=pmax), alpha=0.2) +
 geom_line(data=newdata, aes(x=Treatment, y=p)) +
@@ -74,6 +74,9 @@ coord_trans(x="log") +
 xlab("NAFC treatment (mg/L)") + ylab("Proportion of mortality") + theme_few()
 ```
 
-^This plot is strange, I'm a bit confused how to read it?
+
+
+
+
 
 
