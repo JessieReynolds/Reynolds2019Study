@@ -79,4 +79,3 @@ xlab("NAFC treatment (mg/L)") + ylab("Proportion of mortality") + theme_few()
 
 
 
-
