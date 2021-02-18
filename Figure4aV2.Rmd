@@ -39,33 +39,43 @@ Estimating LC5, LC10, LC50, with CI using delta method:
 ```{r}
 ED(lmort.m1, c(5, 10, 50), interval = "delta")
 ```
+```{r}
+ryegrass
+```
 
 Plotting with ggplot:
 ```{r}
-
+newdata <- expand.grid(Treatment=exp(seq(log(0.5), log(100), length=100)))
 ```
 
-# new dose levels as support for the line
-newdata <- expand.grid(conc=exp(seq(log(0.5), log(100), length=100)))
+```{r}
 # predictions and confidence intervals
-pm <- predict(ryegrass.LL.4, newdata=newdata, interval="confidence")
+pm <- predict(lmort.m1, newdata=newdata, interval="confidence")
+```
+
+```{r}
 # new data with predictions
 newdata$p <- pm[,1]
 newdata$pmin <- pm[,2]
 newdata$pmax <- pm[,3]
-# plot curve
-library(ggplot2)
-# need to shift conc == 0 a bit up, otherwise there are problems with coord_trans
-ryegrass$conc0 <- ryegrass$conc
-ryegrass$conc0[ryegrass$conc0 == 0] <- 0.5
-# plotting the curve
-ggplot(ryegrass, aes(x = conc0, y = rootl)) +
-geom_point() +
-geom_ribbon(data=newdata, aes(x=conc, y=p, ymin=pmin, ymax=pmax), alpha=0.2) +
-geom_line(data=newdata, aes(x=conc, y=p)) +
-coord_trans(x="log") +
-xlab("Ferulic acid (mM)") + ylab("Root length (cm)")
+```
 
+```{r}
+# plot curve
+# need to shift conc == 0 a bit up, otherwise there are problems with coord_trans
+lmortdata$Treatment0 <- lmortdata$Treatment
+lmortdata$Treatment0[lmortdata$Treatment0 == 0] <- 0.5
+```
+
+```{r}
+# plotting the curve
+ggplot(lmortdata, aes(x = Treatment0, y = TotalDeath/Initial)) +
+geom_point() + 
+geom_ribbon(data=newdata, aes(x=Treatment, y=p, ymin=pmin, ymax=pmax), alpha=0.2) +
+geom_line(data=newdata, aes(x=Treatment, y=p)) +
+coord_trans(x="log") +
+xlab("NAFC treatment (mg/L)") + ylab("Proportion of mortality") + theme_few()
+```
 
 
 
